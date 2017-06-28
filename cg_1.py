@@ -62,6 +62,25 @@ def get_filename():
     return name_from_fdi
 
 
+# append and return content and format of the enum
+def enum_write():
+    enum_list = []
+    enum_counter = 1
+    global no_of_states
+
+    enum_signature = "typedef enum{ \n"
+    enum_list.append(enum_signature)
+
+    for num in range(int(no_of_states)):
+        em_state = '\t\t'+state_objects_dict[num].name.upper()+'= '+str(enum_counter)+';\n';
+        enum_list.append(em_state)
+        enum_counter += 1
+
+    enum_close_signature = "\t \t}state; \n \n "    
+    enum_list.append(enum_close_signature)
+
+    return enum_list
+
 # create file and write data to the file
 def paint_file():
 
@@ -70,23 +89,29 @@ def paint_file():
     fo = open(file_name + ".c", "w")
 
     # paint the header of the respective file
-    fo.write('#include "' + file_name + '.h" \n \n \n')
+    fo.write('#include "' +file_name+ '.h" \n \n \n')
 
-    # get the controller function list
+    # get the controller function list. user inputs are given here
     controller_list = controller_write()
+
+    # get the enum list    
+    enum_list = enum_write()
+    # paint the enum 
+    for el in enum_list:
+        fo.write(el)
 
     # get the cumulative function list
     function_list = functions_write()
     # paint individual functions
-    for em in function_list:
-        fo.write(em)
+    for fl in function_list:
+        fo.write(fl)
 
     # add some delibrate space    
     fo.write('\n \n')    
 
     # paint controller function
-    for el in controller_list:
-        fo.write(el)
+    for cf in controller_list:
+        fo.write(cf)
 
 
 # main function
