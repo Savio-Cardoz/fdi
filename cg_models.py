@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+# class for individual state in the diagram
 class State(object):
     """docstring for State"""
 
@@ -7,13 +8,13 @@ class State(object):
         super(State, self).__init__()
         self.name = name  # name of the state
         self.code = code  # code in the state machine
-        self.transitions = []  # Transitions of the state. This would include objects of class Transition
+        self.transitions = []  # transitions of the state. This would include objects of class Transition
 
     def __str__(self):
         return self.name
 
 
-# This class is used to depict a transition from ione state to another
+# class for transition from one state to another
 class Transition(object):
     """docstring for Transition"""
 
