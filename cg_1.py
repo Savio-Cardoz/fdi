@@ -1,6 +1,15 @@
 #!/usr/bin/python
 
 
+# Dictionaries for storing the names, code and objects of the states
+state_names_dict = {}
+state_code_dict = {}             
+State_objects_dict = {}
+
+no_of_states = 0
+
+
+
 # TODO: The classes shall be moved to another file and would be imported here
 # This class is used to depict a state in the state machine
 class State(object):
@@ -40,12 +49,8 @@ def Controller_Write():
     # switch_signature = 'void '+name_from_fdi_+'controller(void){ \n \n \t switch(state_variable){ \n \n'
     controller_list.append(switch_signature)
 
+    global no_of_states #This is important as we are using python global
     no_of_states = raw_input("How many states are there?")
-
-    # Dictionaries for storing the names, code and objects of the states
-    state_names_dict = {}
-    state_code_dict = {}
-    State_objects_dict = {}
 
     # Store the code and name of the states and create State objects
     for num in range(int(no_of_states)):
@@ -53,14 +58,12 @@ def Controller_Write():
         state_code_dict[num] = raw_input("please provide the code of the state_"+str(num))
         State_objects_dict[num] = State(state_names_dict[num], state_code_dict[num])
 
-
     # Paint the states to the controller_list
     for num in range(int(no_of_states)):
-        state_name = '\tcase '+State_objects_dict[num].name+' : \n'
-        state_code = '\t \t \t \t'+State_objects_dict[num].code+'\n \n'
+        state_name = '\tcase '+State_objects_dict[num].name.upper()+' : \n'
+        state_func = '\t \t \t \t' + State_objects_dict[num].name + '(); \n \n'
         controller_list.append(state_name)
-        controller_list.append(state_code)
-
+        controller_list.append(state_func)
 
     # Default state signature
     default_signature = "\tdefault:    /* Do Nothing*/ \n \n }"
@@ -68,6 +71,18 @@ def Controller_Write():
 
     return controller_list
 
+
+#This function returns the functions list of the diagram
+def function_list_func():
+    function_list = []
+
+    for num in range(int(no_of_states)):
+        state_func_name = '(void) '+State_objects_dict[num].name+'(void) { \n \n \t'
+        state_func_code = State_objects_dict[num].code+'\n } \n \n'
+        function_list.append(state_func_name)
+        function_list.append(state_func_code)
+                
+    return function_list
 
 # This function creates and returns the name of the state machine file
 def paint_filename():
@@ -79,6 +94,7 @@ def paint_filename():
 
 # This function creates the file
 def paint_file():
+
     # Get the name of the file to be created and create the file
     file_name = paint_filename()
     fo = open(file_name + ".c", "w")
@@ -88,6 +104,16 @@ def paint_file():
 
     # Generation of controller function
     controller_list = Controller_Write()
+
+    # Painting individual functions to the file
+    function_list_1 = function_list_func()
+
+    for em in function_list_1:
+        fo.write(em)
+
+    fo.write('\n \n')    
+
+    # Painting the controller function
     for el in controller_list:
         fo.write(el)
 
@@ -103,9 +129,3 @@ def main():
 # This function would be called on executing the file from command line
 if __name__ == "__main__":
     main()
-
-
-# TODO: Start writing into the file the proper content with the name of the function and the transitions.
-
-
-
