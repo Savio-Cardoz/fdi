@@ -55,6 +55,16 @@ def functions_write():
                 
     return function_list
 
+# write the individual declarations of each function in the header file 
+def functions_decl_write():
+    functions_decl_list = []
+
+    for num in range(int(no_of_states)):
+        state_func_name = '(void) '+state_objects_dict[num].name+'(void) ; \n \n '
+        functions_decl_list.append(state_func_name)
+                        
+    return functions_decl_list
+
 
 # get, set and return the name of the state machine file
 def get_filename():
@@ -84,34 +94,44 @@ def enum_write():
 # create file and write data to the file
 def paint_file():
 
-    # get the name of the file to be created and create the file
+    # get the name of the file to be created and create source and header file
     file_name = get_filename()
-    fo = open(file_name + ".c", "w")
+    fs = open(file_name + ".c", "w")
+    fh = open(file_name + ".h", "w")
+
 
     # paint the header of the respective file
-    fo.write('#include "' +file_name+ '.h" \n \n \n')
+    fs.write('#include "' +file_name+ '.h" \n \n \n')
 
     # get the controller function list. user inputs are given here
     controller_list = controller_write()
 
     # get the enum list    
     enum_list = enum_write()
-    # paint the enum 
+    # paint the enum to the header file
     for el in enum_list:
-        fo.write(el)
+        fh.write(el)
+
+    # create the state variable    
+    fs.write("state state_variable; \n \n")
+
+    # paint the declarations to the header file
+    functions_decl_list = functions_decl_write()
+    for fd in functions_decl_list:
+        fh.write(fd)
 
     # get the cumulative function list
     function_list = functions_write()
     # paint individual functions
     for fl in function_list:
-        fo.write(fl)
+        fs.write(fl)
 
     # add some delibrate space    
-    fo.write('\n \n')    
+    fs.write('\n \n')    
 
     # paint controller function
     for cf in controller_list:
-        fo.write(cf)
+        fs.write(cf)
 
 
 # main function
