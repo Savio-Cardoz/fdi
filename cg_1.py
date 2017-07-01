@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from cg_models import State
+from cg_models import Transition
 
 
 # Dictionaries for storing the names, code and objects of the states
@@ -7,8 +8,10 @@ state_names_dict = {}
 state_code_dict = {}             
 state_objects_dict = {}
 
-no_of_states = 0
+# Dictionary for storing the Transitions objects
+transitions_objects_dict = {}
 
+no_of_states = 0
 
 # append and return content and format for the controller function
 def controller_write():
@@ -43,14 +46,32 @@ def controller_write():
     return controller_list
 
 
-# append and return content and format of individual State functions
+# append and return content and format of individual State functions and transitions
 def functions_write():
     function_list = []
+    global state_objects_dict
 
     for num in range(int(no_of_states)):
         state_func_name = '(void) '+state_objects_dict[num].name+'(void) { \n \n \t'
-        state_func_code = state_objects_dict[num].code+'\n } \n \n'
         function_list.append(state_func_name)
+        
+        state_func_code = state_objects_dict[num].code+'\n } \n \n'
+        
+        if len(state_objects_dict[num].transitions) != 0:
+        # if not state_objects_dict[num].transitions:
+            for num_1 in state_objects_dict[num].transitions:
+                # num_1 has the code of the transition now
+                trs_name = '/* '+num_1.name+' */ \n'
+                trs_signature = "\t if("+num_1.condition+"){ \n"
+                trs_satement = "\t\t state_variable= "+num_1.trs_to+"; \n\t}\n\n\t"
+                function_list.append(trs_name)
+                function_list.append(trs_signature)
+                function_list.append(trs_satement)
+                
+        else:
+            print("There are no transitions in any of the State's in functions_write()")
+            
+        # TODO: This shall be moved up 
         function_list.append(state_func_code)
                 
     return function_list
@@ -91,6 +112,33 @@ def enum_write():
 
     return enum_list
 
+# get the transition data from the diagram
+def get_trans_data():
+    
+    global no_of_states
+    transitions_objects_dict = {}
+    global state_objects_dict
+
+    no_of_trans = raw_input("How many transitions are there ?")
+
+    # get the details of individual transitions and save in dictionary
+    for num in range(int(no_of_trans)):
+        trs_name = raw_input("please enter the name of the transition_"+str(num))
+        trs_from = raw_input("transition from which state?")
+        trs_to = raw_input("transition to which state?")
+        trs_condition = raw_input("condition of transition?")
+        transitions_objects_dict[num] = Transition(trs_name, trs_to, trs_from, trs_condition)
+
+        # map the transitions to the State's
+        for num_1 in range(int(no_of_states)):
+            if((trs_from) == (state_objects_dict[num_1].name)):
+                state_objects_dict[num_1].transitions.append(transitions_objects_dict[num])
+                print("The transition has matched with the "+state_objects_dict[num_1].name)    
+            else:
+                print("The transitions didn't match any of the State's in get_trans_data()")
+                
+
+    
 # create file and write data to the file
 def paint_file():
 
@@ -106,6 +154,9 @@ def paint_file():
     # get the controller function list. user inputs are given here
     controller_list = controller_write()
 
+    # get the transitions details and merge the transitions with the State objects
+    get_trans_data()        
+
     # get the enum list    
     enum_list = enum_write()
     # paint the enum to the header file
@@ -115,7 +166,7 @@ def paint_file():
     # create the state variable    
     fs.write("state state_variable; \n \n")
 
-    # paint the declarations to the header file
+    # paint the function declarations to the header file
     functions_decl_list = functions_decl_write()
     for fd in functions_decl_list:
         fh.write(fd)
